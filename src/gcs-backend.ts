@@ -155,8 +155,12 @@ if $max > 0 {
     | sort-by created | reverse | skip $max
   } catch { [] })
   for e in $entries {
-    ^gcloud storage rm $e.url | complete | ignore
-    log $"evicted ($e.url)"
+    let result = (^gcloud storage rm $e.url | complete)
+    if $result.exit_code == 0 {
+      log $"evicted ($e.url)"
+    } else {
+      log $"warn: failed to evict ($e.url): ($result.stderr)"
+    }
   }
 }
 

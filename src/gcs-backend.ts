@@ -76,11 +76,20 @@ export class GcsBackend implements CacheBackend {
         const expr = hashExpr(c);
         const flag = threadFlag(c, true); // GCS defaults to multi-threaded
         const label = `restore-${c.name}-cache`;
+        const skipIfExists = c.skipRestoreIfPathsExist ?? false;
+        const pathList = c.paths.map((p) => `"${p}"`).join(", ");
+        const skipGuard = skipIfExists
+            ? `if ([${pathList}] | any { |p| $p | path exists }) {
+  log $"${label}: paths already exist, skipping restore ($hash)"
+  exit 0
+}
+`
+            : "";
 
         return cacheScript(
             `${expr}
 $hash | save -f ${hashFile}
-
+${skipGuard}
 let object = $"${this.prefix}($hash).tar.zst"
 let gcs_url = $"gs://${this.bucket}/($object)"
 log $"${label}: checking ($gcs_url)"
@@ -92,7 +101,7 @@ if $exists {
     | lines | first | str trim | split words | first | into int
   )
   log $"${label}: hit ($hash) size=(($size / 1_000_000) | math round --precision 1)MB"
-  let cache_paths = [${c.paths.map((p) => `"${p}"`).join(", ")}]
+  let cache_paths = [${pathList}]
   for p in $cache_paths {
     if ($p | path exists) { ^chmod -R u+w $p; rm -rf $p }
   }

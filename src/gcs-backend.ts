@@ -1,7 +1,7 @@
 import type { TaskCacheSpec, TaskStepSpec } from "../core/task";
 import type { BackendCtx, CacheBackend } from "../core/cache-backend";
 import type { Script } from "../script";
-import { threadFlag, hashExpr, cacheScript, COMPRESSED_CACHE_LANGUAGE } from "./shared";
+import { threadFlag, hashExpr, cacheScript, stagedExtract, COMPRESSED_CACHE_LANGUAGE } from "./shared";
 import { DEFAULT_GCS_COMPRESSION_LEVEL } from "../constants";
 
 /** Options for constructing a {@link GcsBackend}. */
@@ -78,6 +78,15 @@ export class GcsBackend implements CacheBackend {
         const label = `restore-${c.name}-cache`;
         const skipIfExists = c.skipRestoreIfPathsExist ?? false;
         const pathList = c.paths.map((p) => `"${p}"`).join(", ");
+        // Indented to sit inside the `if $exists` block.
+        const stagedExtractBody = stagedExtract(
+            c,
+            label,
+            `^gcloud --verbosity=error storage cp $gcs_url - | ^zstd -d ${flag} -c | ^tar xf - -C $stage -o --no-same-permissions`,
+        )
+            .split("\n")
+            .map((l) => (l.length > 0 ? `  ${l}` : l))
+            .join("\n");
         const skipGuard = skipIfExists
             ? `if ([${pathList}] | any { |p| $p | path exists }) {
   log $"${label}: paths already exist, skipping restore ($hash)"
@@ -101,13 +110,9 @@ if $exists {
     | lines | first | str trim | split words | first | into int
   )
   log $"${label}: hit ($hash) size=(($size / 1_000_000) | math round --precision 1)MB"
-  let cache_paths = [${pathList}]
-  for p in $cache_paths {
-    if ($p | path exists) { ^chmod -R u+w $p; rm -rf $p }
-  }
   log "${label}: downloading ..."
   let t0 = (date now)
-  ^gcloud --verbosity=error storage cp $gcs_url - | ^zstd -d ${flag} -c | ^tar xf - -o --no-same-permissions
+${stagedExtractBody}
   let elapsed = (((date now) - $t0) | into int) / 1_000_000_000
   let speed = (if $elapsed > 0 { ($size / 1_000_000) / $elapsed | math round --precision 1 } else { 0 })
   log $"${label}: restored in ($elapsed)s ($speed) MB/s"

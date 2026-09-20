@@ -2,15 +2,19 @@ import type { TaskCacheSpec, TaskStepSpec } from "../core/task";
 import type { BackendCtx, CacheBackend } from "../core/cache-backend";
 import type { Script } from "../script";
 import { threadFlag, hashExpr, cacheScript, stagedExtract, COMPRESSED_CACHE_LANGUAGE } from "./shared";
+import { injectedImageRef } from "../core/injected-image";
 import { DEFAULT_GCS_COMPRESSION_LEVEL } from "../constants";
 
 /**
- * Container image for GCS cache restore/save steps. Provides the Google Cloud
- * SDK (gcloud storage) alongside nushell, zstd, and tar for
- * Workload Identity-authenticated GCS access without manual token management.
+ * An image known to provide what GCS cache steps need: the Google Cloud SDK
+ * (`gcloud storage`) alongside nushell, zstd and tar, for Workload Identity-authenticated
+ * GCS access without manual token management.
  *
- * This is the backend's own default, not the core's: {@link BackendCtx} carries no
- * provider-specific image, so a backend that needs one keeps it beside itself.
+ * **Not a default.** A backend with no `image` of its own resolves through the project's
+ * `injectedStepImage`, which must declare `gcloud` — so a project that never names a
+ * gcloud-capable image is told so at synth time rather than pulling one nobody chose.
+ * Pass this constant to keep the image this backend used to default to:
+ * `gcs({ bucket, image: DEFAULT_GCS_CACHE_IMAGE })`.
  */
 export const DEFAULT_GCS_CACHE_IMAGE =
     "ghcr.io/pfenerty/apko-cicd/gcloud:563.0.0" as const;
@@ -26,8 +30,9 @@ export interface GcsBackendOptions {
      */
     prefix?: string;
     /**
-     * Image for the injected restore/save steps.
-     * Defaults to {@link DEFAULT_GCS_CACHE_IMAGE}; a `TaskCacheSpec.image` still wins.
+     * Image for the injected restore/save steps. Must provide `gcloud`, `nushell`, `tar`
+     * and `zstd` — {@link DEFAULT_GCS_CACHE_IMAGE} is one that does. Defaults to the
+     * project's `injectedStepImage`; a `TaskCacheSpec.image` still wins.
      */
     image?: string;
 }
@@ -51,13 +56,17 @@ export class GcsBackend implements CacheBackend {
     readonly needsPvcWorkspace = false as const;
     readonly bucket: string;
     readonly prefix: string;
-    /** Step image this backend falls back to when the cache spec names none. */
+    /**
+     * Step image this backend falls back to when the cache spec names none. When the
+     * caller passed no `image`, this resolves to the project's `injectedStepImage` at
+     * synth time, and synthesis fails if that image does not declare `gcloud`.
+     */
     readonly image: string;
 
     constructor(opts: GcsBackendOptions) {
         this.bucket = opts.bucket;
         this.prefix = opts.prefix ?? "";
-        this.image = opts.image ?? DEFAULT_GCS_CACHE_IMAGE;
+        this.image = opts.image ?? injectedImageRef("gcloud", "nushell", "tar", "zstd");
     }
 
     restoreStep(spec: TaskCacheSpec, ctx: BackendCtx): TaskStepSpec {

@@ -4,6 +4,17 @@ import type { Script } from "../script";
 import { threadFlag, hashExpr, cacheScript, stagedExtract, COMPRESSED_CACHE_LANGUAGE } from "./shared";
 import { DEFAULT_GCS_COMPRESSION_LEVEL } from "../constants";
 
+/**
+ * Container image for GCS cache restore/save steps. Provides the Google Cloud
+ * SDK (gcloud storage) alongside nushell, zstd, and tar for
+ * Workload Identity-authenticated GCS access without manual token management.
+ *
+ * This is the backend's own default, not the core's: {@link BackendCtx} carries no
+ * provider-specific image, so a backend that needs one keeps it beside itself.
+ */
+export const DEFAULT_GCS_CACHE_IMAGE =
+    "ghcr.io/pfenerty/apko-cicd/gcloud:563.0.0" as const;
+
 /** Options for constructing a {@link GcsBackend}. */
 export interface GcsBackendOptions {
     /** GCS bucket name (e.g. `'my-project-ci-cache'`). */
@@ -14,6 +25,11 @@ export interface GcsBackendOptions {
      * Defaults to `''`.
      */
     prefix?: string;
+    /**
+     * Image for the injected restore/save steps.
+     * Defaults to {@link DEFAULT_GCS_CACHE_IMAGE}; a `TaskCacheSpec.image` still wins.
+     */
+    image?: string;
 }
 
 /**
@@ -35,28 +51,31 @@ export class GcsBackend implements CacheBackend {
     readonly needsPvcWorkspace = false as const;
     readonly bucket: string;
     readonly prefix: string;
+    /** Step image this backend falls back to when the cache spec names none. */
+    readonly image: string;
 
     constructor(opts: GcsBackendOptions) {
         this.bucket = opts.bucket;
         this.prefix = opts.prefix ?? "";
+        this.image = opts.image ?? DEFAULT_GCS_CACHE_IMAGE;
     }
 
-    restoreStep(spec: TaskCacheSpec, taskName: string, ctx: BackendCtx): TaskStepSpec {
+    restoreStep(spec: TaskCacheSpec, ctx: BackendCtx): TaskStepSpec {
         return {
             name: `restore-${spec.name}-cache`,
-            image: spec.image ?? ctx.defaultGcsCacheImage,
-            script: this._makeRestoreScript(spec, taskName),
+            image: spec.image ?? this.image,
+            script: this._makeRestoreScript(spec, ctx.taskName),
             env: [{ name: "CLOUDSDK_CONFIG", value: "/tekton/home/.config/gcloud" }],
             ...(spec.workingDir ? { workingDir: spec.workingDir } : {}),
             ...(spec.computeResources ? { computeResources: spec.computeResources } : {}),
         };
     }
 
-    saveStep(spec: TaskCacheSpec, taskName: string, ctx: BackendCtx): TaskStepSpec {
+    saveStep(spec: TaskCacheSpec, ctx: BackendCtx): TaskStepSpec {
         return {
             name: `save-${spec.name}-cache`,
-            image: spec.image ?? ctx.defaultGcsCacheImage,
-            script: this._makeSaveScript(spec, taskName),
+            image: spec.image ?? this.image,
+            script: this._makeSaveScript(spec, ctx.taskName),
             onError: "continue" as const,
             env: [{ name: "CLOUDSDK_CONFIG", value: "/tekton/home/.config/gcloud" }],
             ...(spec.workingDir ? { workingDir: spec.workingDir } : {}),

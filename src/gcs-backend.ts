@@ -1,9 +1,27 @@
-import type { TaskCacheSpec, TaskStepSpec } from "../core/task";
-import type { BackendCtx, CacheBackend } from "../core/cache-backend";
-import type { Script } from "../script";
-import { threadFlag, hashExpr, cacheScript, stagedExtract, COMPRESSED_CACHE_LANGUAGE } from "./shared";
-import { injectedImageRef } from "../core/injected-image";
-import { DEFAULT_GCS_COMPRESSION_LEVEL } from "../constants";
+import {
+    COMPRESSED_CACHE_LANGUAGE,
+    cacheScript,
+    hashExpr,
+    injectedImageRef,
+    stagedExtract,
+    threadFlag,
+} from "@pfenerty/tektonic";
+import type {
+    BackendCtx,
+    CacheBackend,
+    Script,
+    TaskCacheSpec,
+    TaskStepSpec,
+} from "@pfenerty/tektonic";
+
+/**
+ * Default zstd compression level for this backend.
+ *
+ * Higher than the PVC default (1) because GCS targets robust environments where CPU is
+ * plentiful and a smaller archive speeds up every transfer. Override per cache with
+ * `TaskCacheSpec.compressionLevel`.
+ */
+export const DEFAULT_GCS_COMPRESSION_LEVEL = 3;
 
 /**
  * An image known to provide what GCS cache steps need: the Google Cloud SDK

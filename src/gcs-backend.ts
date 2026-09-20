@@ -17,7 +17,7 @@ import { DEFAULT_GCS_COMPRESSION_LEVEL } from "../constants";
  * `gcs({ bucket, image: DEFAULT_GCS_CACHE_IMAGE })`.
  */
 export const DEFAULT_GCS_CACHE_IMAGE =
-    "ghcr.io/pfenerty/apko-cicd/gcloud:563.0.0" as const;
+    "ghcr.io/pfenerty/apko-cicd/gcloud:581.0.0" as const;
 
 /** Options for constructing a {@link GcsBackend}. */
 export interface GcsBackendOptions {

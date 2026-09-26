@@ -1,6 +1,6 @@
 # @pfenerty/tektonic-cache-gcs
 
-Google Cloud Storage providers for [tektonic](https://github.com/pfenerty/tektonic): a
+Google Cloud Storage providers for [tektonic](https://github.com/tektonic-ci/core): a
 `CacheBackend` and an `ArtifactStore`.
 
 - **`gcs()`** stores cache archives as `.tar.zst` objects in a GCS bucket instead of on a PVC,

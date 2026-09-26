@@ -1,7 +1,7 @@
 /**
  * Google Cloud Storage providers for tektonic: a `CacheBackend` and an `ArtifactStore`.
  *
- * Ships outside `@pfenerty/tektonic` on purpose: it imports nothing but that package's
+ * Ships outside `@tektonic-ci/core` on purpose: it imports nothing but that package's
  * published surface, so both seams are exercised by a real out-of-tree implementation
  * rather than assumed to work. See `docs/cache-backends.md` and `docs/artifacts.md`.
  *
@@ -9,7 +9,7 @@
  * content-addressed and reused across runs, an artifact is run-scoped with one writer.
  *
  * ```ts
- * import { gcs, gcsArtifacts } from '@pfenerty/tektonic-cache-gcs';
+ * import { gcs, gcsArtifacts } from '@tektonic-ci/cache-gcs';
  *
  * caches: [{ name: 'npm', key: ['package-lock.json'], paths: ['node_modules'],
  *            compress: true, backend: gcs({ bucket: 'my-ci-cache', prefix: 'tekton/' }) }]

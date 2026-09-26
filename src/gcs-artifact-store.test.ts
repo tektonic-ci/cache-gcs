@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { App, Chart } from 'cdk8s';
-import { Pipeline, Task, TektonicProject, Workspace, WorkspaceArtifactStore, defineAction, sh } from '@pfenerty/tektonic';
-import type { TaskStepSpec } from '@pfenerty/tektonic';
-import { synthTask } from '@pfenerty/tektonic/testing';
+import { Pipeline, Task, TektonicProject, Workspace, WorkspaceArtifactStore, defineAction, sh } from '@tektonic-ci/core';
+import type { TaskStepSpec } from '@tektonic-ci/core';
+import { synthTask } from '@tektonic-ci/core/testing';
 import {
   gcsArtifacts,
   GcsArtifactStore,
@@ -11,7 +11,7 @@ import {
 } from './gcs-artifact-store';
 
 /**
- * Like the cache backend's tests, these reach the store through `@pfenerty/tektonic`'s
+ * Like the cache backend's tests, these reach the store through `@tektonic-ci/core`'s
  * published surface — the point of shipping it outside the core package is that the
  * `ArtifactStore` seam is exercised by an implementation with no in-tree privileges.
  */

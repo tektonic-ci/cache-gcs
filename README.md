@@ -1,4 +1,4 @@
-# @pfenerty/tektonic-cache-gcs
+# @tektonic-ci/cache-gcs
 
 Google Cloud Storage providers for [tektonic](https://github.com/tektonic-ci/core): a
 `CacheBackend` and an `ArtifactStore`.
@@ -23,10 +23,10 @@ annotated with `iam.gke.io/gcp-service-account` pointing at a GCP service accoun
 ## Install
 
 ```bash
-npm install @pfenerty/tektonic-cache-gcs
+npm install @tektonic-ci/cache-gcs
 ```
 
-`@pfenerty/tektonic` is a **peer** dependency, deliberately: a cache backend is matched to a
+`@tektonic-ci/core` is a **peer** dependency, deliberately: a cache backend is matched to a
 `Task` by object identity, and two copies of the core package are two incompatible sets of
 classes. Your project pins the version; this package follows it.
 
@@ -35,8 +35,8 @@ classes. Your project pins the version; this package follows it.
 ### Caches
 
 ```ts
-import { Task } from '@pfenerty/tektonic';
-import { gcs } from '@pfenerty/tektonic-cache-gcs';
+import { Task } from '@tektonic-ci/core';
+import { gcs } from '@tektonic-ci/cache-gcs';
 
 new Task({
   name: 'test',
@@ -54,8 +54,8 @@ new Task({
 ### Artifacts
 
 ```ts
-import { Task } from '@pfenerty/tektonic';
-import { gcsArtifacts } from '@pfenerty/tektonic-cache-gcs';
+import { Task } from '@tektonic-ci/core';
+import { gcsArtifacts } from '@tektonic-ci/cache-gcs';
 
 const store = gcsArtifacts({ bucket: 'my-ci-artifacts', prefix: 'runs/' });
 
@@ -119,7 +119,7 @@ one needs `gcloud`.
 ## Why it is a separate package
 
 Because nothing else proves the `CacheBackend` and `ArtifactStore` seams work. This package
-imports only `@pfenerty/tektonic`'s published surface — a build-time check enforces it — so
+imports only `@tektonic-ci/core`'s published surface — a build-time check enforces it — so
 anything a third-party backend or store would need and cannot reach fails here first. See
 [docs/cache-backends.md](../../docs/cache-backends.md) and
 [docs/artifacts.md](../../docs/artifacts.md) to write your own.

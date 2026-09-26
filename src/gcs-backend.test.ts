@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { App, Chart } from 'cdk8s';
-import { Task, Workspace } from '@pfenerty/tektonic';
-import type { BackendCtx, CacheBackend, TaskCacheSpec } from '@pfenerty/tektonic';
-import { synthTask } from '@pfenerty/tektonic/testing';
+import { Task, Workspace } from '@tektonic-ci/core';
+import type { BackendCtx, CacheBackend, TaskCacheSpec } from '@tektonic-ci/core';
+import { synthTask } from '@tektonic-ci/core/testing';
 import { gcs, DEFAULT_GCS_CACHE_IMAGE } from './gcs-backend';
 
 /**
  * These tests used to live inside the core package, where `gcs()` was one import away from
  * the code it was testing. They now reach the backend the way any consumer does — through
- * `@pfenerty/tektonic`'s published surface — which is the point of shipping it separately.
+ * `@tektonic-ci/core`'s published surface — which is the point of shipping it separately.
  */
 
 /**

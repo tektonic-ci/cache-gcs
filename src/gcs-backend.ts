@@ -5,14 +5,14 @@ import {
     injectedImageRef,
     stagedExtract,
     threadFlag,
-} from "@pfenerty/tektonic";
+} from "@tektonic-ci/core";
 import type {
     BackendCtx,
     CacheBackend,
     Script,
     TaskCacheSpec,
     TaskStepSpec,
-} from "@pfenerty/tektonic";
+} from "@tektonic-ci/core";
 
 /**
  * Default zstd compression level for this backend.

@@ -3,14 +3,14 @@ import {
     cacheScript,
     injectedImageRef,
     threadFlag,
-} from "@pfenerty/tektonic";
+} from "@tektonic-ci/core";
 import type {
     ArtifactStore,
     ArtifactStoreCtx,
     Script,
     TaskArtifact,
     TaskStepSpec,
-} from "@pfenerty/tektonic";
+} from "@tektonic-ci/core";
 
 /**
  * Default zstd compression level for artifact archives.

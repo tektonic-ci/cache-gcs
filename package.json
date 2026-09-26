@@ -1,6 +1,6 @@
 {
   "name": "@tektonic-ci/cache-gcs",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Google Cloud Storage cache backend and artifact store for tektonic",
   "license": "Apache-2.0",
   "repository": {

@@ -118,12 +118,13 @@ one needs `gcloud`.
 
 ## Why it is a separate package
 
-Because nothing else proves the `CacheBackend` and `ArtifactStore` seams work. This package
-imports only `@tektonic-ci/core`'s published surface — a build-time check enforces it — so
-anything a third-party backend or store would need and cannot reach fails here first. See
-[docs/cache-backends.md](../../docs/cache-backends.md) and
-[docs/artifacts.md](../../docs/artifacts.md) to write your own.
+Because nothing else proves the `CacheBackend` and `ArtifactStore` seams work. This repo
+builds and tests against `@tektonic-ci/core` as published on npm, exactly as a third-party
+backend would, so anything such a backend or store would need and cannot reach fails here
+first. See
+[docs/cache-backends.md](https://github.com/tektonic-ci/core/blob/main/docs/cache-backends.md) and
+[docs/artifacts.md](https://github.com/tektonic-ci/core/blob/main/docs/artifacts.md) to write your own.
 
 ## License
 
-[Apache-2.0](../../LICENSE)
+[Apache-2.0](LICENSE)

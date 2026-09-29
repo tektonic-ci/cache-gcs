@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { App, Chart } from 'cdk8s';
 import { Pipeline, Task, TektonicProject, Workspace, WorkspaceArtifactStore, defineAction, sh } from '@tektonic-ci/core';
-import type { TaskStepSpec } from '@tektonic-ci/core';
-import { synthTask } from '@tektonic-ci/core/testing';
+import type { InjectedStepImage, TaskStepSpec } from '@tektonic-ci/core';
+import { assertArtifactStoreConformance, synthTask } from '@tektonic-ci/core/testing';
 import {
   gcsArtifacts,
   GcsArtifactStore,
@@ -221,5 +221,18 @@ describe('GcsArtifactStore steps', () => {
     const spec = manifest(build) as any;
     const publish = spec.spec.steps.find((s: { name: string }) => s.name === 'publish-dist-artifact');
     expect(publish.env).toEqual([{ name: 'CLOUDSDK_CONFIG', value: '/tekton/home/.config/gcloud' }]);
+  });
+});
+
+// Core's conformance kit drives the store through core's own synthesis. Run against the
+// core in the lockfile here, and against @tektonic-ci/core@next by self-CI's test-core-next.
+describe('ArtifactStore conformance', () => {
+  const injectedStepImage: InjectedStepImage = {
+    image: 'ghcr.io/example/ci-base:test',
+    provides: ['sh', 'git', 'nushell', 'tar', 'zstd', 'gcloud'],
+  };
+
+  it('holds for gcsArtifacts()', () => {
+    assertArtifactStoreConformance(() => gcsArtifacts({ bucket: 'ci-artifacts' }), { injectedStepImage });
   });
 });

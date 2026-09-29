@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { App, Chart } from 'cdk8s';
 import { Task, Workspace } from '@tektonic-ci/core';
-import type { BackendCtx, CacheBackend, TaskCacheSpec } from '@tektonic-ci/core';
-import { synthTask } from '@tektonic-ci/core/testing';
+import type { BackendCtx, CacheBackend, InjectedStepImage, TaskCacheSpec } from '@tektonic-ci/core';
+import { assertCacheBackendConformance, synthTask } from '@tektonic-ci/core/testing';
 import { gcs, DEFAULT_GCS_CACHE_IMAGE } from './gcs-backend';
 
 /**
@@ -608,5 +608,18 @@ describe('BackendCtx', () => {
       expect(Object.keys(ctx).sort()).toEqual(['defaultImage', 'taskName']);
       expect(ctx.taskName).toBe('compile');
     }
+  });
+});
+
+// Core's conformance kit drives the backend through core's own synthesis. Run against the
+// core in the lockfile here, and against @tektonic-ci/core@next by self-CI's test-core-next.
+describe('CacheBackend conformance', () => {
+  const injectedStepImage: InjectedStepImage = {
+    image: 'ghcr.io/example/ci-base:test',
+    provides: ['sh', 'git', 'nushell', 'tar', 'zstd', 'gcloud'],
+  };
+
+  it('holds for gcs()', () => {
+    assertCacheBackendConformance(() => gcs({ bucket: 'my-ci-cache' }), { injectedStepImage });
   });
 });

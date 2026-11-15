@@ -54,6 +54,7 @@
 # - github.repo
 
 export:
-    auto: true
+    auto: false
 sync:
     remote: "git+ssh://git@github.com/tektonic-ci/cache-gcs.git"
+issue-prefix: "cache-gcs"
